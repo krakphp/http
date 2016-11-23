@@ -6,13 +6,32 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /** this takes a controller result and turns it into a response */
 interface MarshalResponse {
-    public function __invoke($tup, $next);
+    public function __invoke($result, $rf, $request, $next);
 }
 
 /** checks if int is within http status code ranges */
 function _isStatusCode($code) {
     return $code >= 100 && $code < 600;
 }
+
+function isTuple($tuple, ...$types) {
+    if (!is_array($tuple) || count($tuple) != count($types)) {
+        return false;
+    }
+
+
+    foreach ($types as $i => $type) {
+        if (
+            !isset($tuple[$i]) ||
+            !($type == "any" || gettype($tuple[$i]) == $type)
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 /** determines if response matches an http tuple, if so, it will pass the body along
     to be marshalled and updates the response with the status and headers set.
@@ -21,19 +40,12 @@ function _isStatusCode($code) {
     as the result
 */
 function httpTupleMarshalResponse() {
-    return function($tup, $next) {
-        list($res, $req, $rf) = $tup;
+    return function($res, $rf, $req, $next) {
 
-        $valid_http_tuple = is_array($res) &&
-            is_int($res[0]) &&
-            _isStatusCode($res[0]) &&
-            (
-                count($res) == 2 ||
-                (count($res == 3) && is_array($res[1]))
-            );
+        $valid_http_tuple = isTuple($res, 'integer', 'any') || isTuple($res, "integer", "array", "any");
 
         if (!$valid_http_tuple) {
-            return $next($tup);
+            return $next($res, $rf, $req);
         }
 
         if (count($res) == 2) {
@@ -43,11 +55,11 @@ function httpTupleMarshalResponse() {
             list($status, $headers, $body) = $res;
         }
 
-        $resp = $next([
+        $resp = $next(
             $body,
-            $req,
-            $rf
-        ]);
+            $rf,
+            $req
+        );
 
         $resp = $resp->withStatus($status);
 
@@ -59,25 +71,35 @@ function httpTupleMarshalResponse() {
     };
 }
 
-function stringMarshalResponse($html = true) {
-    return function($tup, $next) use ($html) {
-        list($res, $req, $rf) = $tup;
+function redirectMarshalResponse($valid_redirects = [300, 301, 302, 303, 304, 305, 307, 308]) {
+    return function($result, $rf, $req, $next) use ($valid_redirects) {
+        $is_redirect = isTuple($result, "integer", "string");
 
+        if (!$is_redirect) {
+            return $next($result, $rf, $req, $next);
+        }
+
+        list($status, $uri) = $result;
+        return $rf($status, ['Location' => $uri]);
+    };
+}
+
+function stringMarshalResponse($html = true) {
+    return function($result, $rf, $req, $next) use ($html) {
         $headers = $html
             ? ['Content-Type' => 'text/html']
             : ['Content-Type' => 'text/plain'];
 
-        return $rf(200, $headers, $res);
+        return $rf(200, $headers, $result);
     };
 }
 
 function jsonMarshalResponse($opts = 0) {
-    return function($tup, $next) use ($opts) {
-        list($res, $req, $rf) = $tup;
+    return function($result, $rf, $req, $next) use ($opts) {
         return $rf(
             200,
             ['Content-Type' => 'application/json'],
-            json_encode($res, $opts)
+            json_encode($result, $opts)
         );
     };
 }

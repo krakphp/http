@@ -1,12 +1,11 @@
 <?php
 
-namespace Krak\Mw\Http\Hooks;
+namespace Krak\Mw\Http\Package;
 
 use Krak\Mw\Http,
     Pimple\Container;
 
-
-class PimpleHook extends Http\AbstractHook
+class PimplePackage extends Http\AbstractPackage
 {
     private $container;
     private $config;
@@ -16,7 +15,7 @@ class PimpleHook extends Http\AbstractHook
         $this->config = [
             'prefix' => '',
             'method_sep' => '@',
-            'name' => 'container',
+            'name' => 'pimple',
         ] + $config;
     }
 
@@ -24,12 +23,16 @@ class PimpleHook extends Http\AbstractHook
         $app->invokeAction()->push(
             pimpleInvokeAction($this->container, $this->config['prefix'], $this->config['method_sep'])
         );
-        $app->mws->push(injectPimple($this->container, $this->config['name']));
+        $app->mws()->push(injectPimple($this->container, $this->config['name']));
     }
 }
 
+function pimple(...$args) {
+    return new PimplePackage(...$args);
+}
+
 /** injects pimple into the request */
-function injectPimple(Container $container, $name = 'container') {
+function injectPimple(Container $container, $name = 'pimple') {
     return function($req, $next) use ($container, $name) {
         return $next($req->withAttribute($name, $container));
     };
@@ -55,23 +58,23 @@ function injectPimple(Container $container, $name = 'container') {
         assert($invoke($req, 'controller@getIndexAction', []) == 'response');
 */
 function pimpleInvokeAction(\Pimple\Container $app, $prefix = '', $method_sep = '@') {
-    return function(ServerRequestInterface $req, $action, $params) use ($invoke, $app, $prefix, $method_sep) {
+    return function($req, $action, $params, $next) use ($app, $prefix, $method_sep) {
         if (!is_string($action)) {
-            return $invoke($req, $action, $params);
+            return $next($req, $action, $params);
         }
 
         if (isset($app[$prefix . $action])) {
-            return $invoke($req, $app[$prefix . $action], $params);
+            return $next($req, $app[$prefix . $action], $params);
         }
         if ($method_sep && strpos($action, $method_sep) !== false) {
             list($controller, $method) = explode($method_sep, $action);
-            return $invoke(
+            return $next(
                 $req,
                 [$app[$prefix . $controller], $method],
                 $params
             );
         }
 
-        return $invoke($req, $action, $params);
+        return $next($req, $action, $params);
     };
 }

@@ -6,10 +6,10 @@ use Psr\Http\Message\ServerRequestInterface,
     Psr\Http\Message\ResponseInterface;
 
 interface InvokeAction {
-    public function __invoke(ServerRequestInterface $req, $action, $params);
+    public function __invoke(ServerRequestInterface $req, $action, $params, $next);
 }
 
-function callableInvokeAction($pass_params = false) {
+function callableInvokeAction($pass_params = true) {
     return function(ServerRequestInterface $req, $action, $params) use ($pass_params) {
         if (!is_callable($action)) {
             throw new \InvalidArgumentException('The action given was not a callable');
@@ -79,27 +79,6 @@ function pimpleInvokeAction($invoke, \Pimple\Container $app, $prefix = '', $meth
         }
 
         return $invoke($req, $action, $params);
-    };
-}
-
-function injectParamsInvokeAction($invoke, $key = 'krak.mw.routing.params') {
-    return function(ServerRequestInterface $req, $action, $params) use ($invoke, $key) {
-        return $invoke(
-            $req->withAttribute($key, $params),
-            $action,
-            $params
-        );
-    };
-}
-
-function responseMarshalInvokeAction($invoke, $marshal_response) {
-    return function(ServerRequestInterface $req, $action, $params) use ($invoke, $marshal_response) {
-        $result = $invoke($req, $action, $params);
-        if ($result instanceof ResponseInterface) {
-            return $result;
-        }
-
-        return $marshal_response($result, $req);
     };
 }
 

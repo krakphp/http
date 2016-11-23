@@ -2,6 +2,8 @@
 
 namespace Krak\Mw\Http;
 
+use Krak\Mw;
+
 /** HttpAppMw
 
     usage:
@@ -12,24 +14,13 @@ namespace Krak\Mw\Http;
         return ['home', []];
     });
     $app->get('/a', 'service@getAAction');
-    $app->with(pimpleProvider());
-    $app->with(platesProvider());
+    $app->with(Mw\Http\Package\std());
 
     $app->mws()->push(function($req, $next) {
 
     });
 
 */
-
-interface Hook {
-    public function with(App $app);
-    public function withPostFreeze(App $app);
-}
-
-abstract class AbtractHook implements Hook {
-    public function with(App $app) {}
-    public function withPostFreeze(App $app) {}
-}
 
 class AppStacks
 {
@@ -56,30 +47,30 @@ class AppStacks
 
 class App
 {
-    use Routing\RouteMatch;
-
-    private $dispatch_factory;
-    private $response_factory;
-    private $routes;
+    use RouteMatch;
 
     /** middleware stacks */
     private $stacks;
 
-    private $hooks;
+    private $dispatcher_factory;
+    private $response_factory;
+    private $routes;
+
+    private $packages;
     private $frozen;
 
-    public function __construct(AppStacks $stacks = null, $dispatch_factory = null, $response_factory = null, Routing\RouteGroup $routes = null) {
-        $this->dispatch_factory = $dispatch_factory ?: Routing\fastRouteDispatchFactory();
-        $this->response_factory = $response_factory ?: diactorosResponseFactory();
-        $this->routes = $routes ?: new Routing\RouteGroup();
-        $this->stacks = $stacks ?: mw\stack();
-        $this->hooks = [];
+    public function __construct(AppStacks $stacks = null, $dispatcher_factory = null, $response_factory = null, RouteGroup $routes = null) {
+        $this->stacks = $stacks ?: new AppStacks();
+        $this->dispatcher_factory = $dispatcher_factory ?: dispatcherFactory();
+        $this->response_factory = $response_factory ?: responseFactory();
+        $this->routes = $routes ?: new RouteGroup();
+        $this->packages = [];
         $this->frozen = false;
     }
 
     /** forwards to the RouteGroup */
     public function match($method, $uri, $handler) {
-        return $this->routes($method, $uri, $handler);
+        return $this->routes->match($method, $uri, $handler);
     }
     /** forwards to the RouteGroup */
     public function group($path, $cb) {
@@ -91,10 +82,16 @@ class App
         return $this->routes;
     }
 
+    public function withPrefix($prefix) {
+        $app = clone $this;
+        $app->routes = RouteGroup::createWithGroup($prefix, $app->routes);
+        return $app;
+    }
+
     /** allows modifications to AppMw in a unified way. This  */
-    public function with(Hook $hook) {
-        $this->hooks[] = $hook;
-        $hook->with($this);
+    public function with(Package $pkg) {
+        $this->packages[] = $pkg;
+        $pkg->with($this);
         return $this;
     }
 
@@ -152,55 +149,52 @@ class App
         $dispatcher_factory = $this->dispatcher_factory;
         $dispatcher = $dispatcher_factory($this->routes);
 
-        $this->stacks->invoke_action->push(
-            Routing\marshalResponseInvokeAction()
-        );
         $mws->push(
             catchException($this->stacks->exception_handler->compose()),
             0,
             'catch_exception'
         );
         $mws->unshift(
-            Routing\routingInjectMw($dispatcher, $this->stacks->not_found_handler->compose()),
+            injectRoutingMiddleware(
+                $dispatcher,
+                $this->stacks->not_found_handler->compose()
+            ),
             0,
             'routing'
         );
-        $mws->unshift(Routing\injectRouteMiddlewareMw(), 0, 'routes');
+        $mws->unshift(injectRouteMiddleware(), 0, 'routes');
         $mws->unshift(
-            Routing\invokeActionMw(
-                $this->stacks->invoke_action->compose()
+            invokeRoutingAction(
+                $this->stacks->invoke_action->compose(),
+                $this->stacks->marshal_response->compose(),
+                $this->response_factory
             ),
             0,
             'invoke'
         );
 
-        foreach ($this->hooks as $hook) {
-            $hook->withPostFreeze($this);
+        foreach ($this->packages as $pkg) {
+            $pkg->withPostFreeze($this);
         }
 
         $this->frozen = true;
     }
 }
 
-// function myHttpAppMw() {
-//     $app = new RESTHttpApp();
-//
-//     // define any routes
-//     require __DIR__ . '/routes.php';
-//     require __DIR__ . '/middleware.php';
-//
-//     return $app->compose();
-// }
-//
-// mw\composeMwSet([
-//
-// ]);
-//
-// mw\compose();
-// mw\group();
-//
-// $serve = Krak\Mw\Http\server();
-//
-// $serve(function($req) {
-//     return $resp;
-// });
+function stdApp() {
+    $app = new App();
+    $app->with(Package\std());
+    return $app;
+}
+
+function restApp() {
+    $app = stdApp();
+    $app->with(Package\rest());
+    return $app;
+}
+
+function webApp() {
+    $app = stdApp();
+    $app->with(Package\plates());
+    return $app;
+}

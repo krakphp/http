@@ -1,10 +1,10 @@
 <?php
 
-namespace Krak\Mw\Http\Hooks;
+namespace Krak\Mw\Http\Package;
 
 use Krak\Mw\Http;
 
-class RESTHook extends Http\AbstractHook
+class RESTPackage extends Http\AbstractPackage
 {
     private $error;
     private $json_opts;
@@ -21,18 +21,21 @@ class RESTHook extends Http\AbstractHook
             $this->json_opts
         );
 
-        $app->exceptionHandler()->push(exceptionHandler(
+        $app->exceptionHandler()->push(restExceptionHandler(
             $rf,
             $this->error
         ));
-        $app->notFoundHandler()->push(notFoundHandler(
+        $app->notFoundHandler()->push(restNotFoundHandler(
             $rf,
             $this->error
         ));
         $app->marshalResponse()
-            ->push(Http\httpTupleMarshalResponse())
             ->push(Http\jsonMarshalResponse($this->json_opts));
     }
+}
+
+function rest(...$args) {
+    return new RESTPackage(...$args);
 }
 
 function _error() {
@@ -59,20 +62,24 @@ function parseJson($rf, $error) {
     };
 }
 
-function exceptionHandler($rf, $error) {
+function restExceptionHandler($rf, $error) {
     return function($req, $exception) use ($rf, $error) {
-        return $rf(500, [], $error('unhandled_exception', $e->getMessage()));
+        return $rf(500, [], $error('unhandled_exception', $exception->getMessage()));
     };
 }
 
-function notFoundHandler($rf, $error) {
-    return function($req, $result) use ($rf, $error) {
+function restNotFoundHandler($rf, $error) {
+    return function($req, $result, $next) use ($rf, $error) {
+        $headers = [];
+        if ($result->status_code == 405) {
+            $headers['Allow'] = implode(", ", $result->allowed_methods);
+        }
         return $rf(
             $result->status_code,
-            [],
+            $headers,
             $error(
                 $result->status_code == 405 ? 'method_not_allowed' : 'not_found',
-                'Resource not found'
+                $result->status_code == 405 ? 'Method Not Allowed' : 'Not Found'
             )
         );
     };

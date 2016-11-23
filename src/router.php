@@ -1,13 +1,9 @@
 <?php
 
-namespace Krak\Mw\Http\Routing;
+namespace Krak\Mw\Http;
 
 use Krak\Mw,
     iter;
-
-function joinUri($a, $b) {
-    return rtrim($a, '/') . '/' . ltrim($b, '/');
-}
 
 class RouteAttributes
 {
@@ -93,7 +89,7 @@ trait AttributesAccessor {
 
 class RouteGroup
 {
-    use RouteMap;
+    use RouteMatch;
     use AttributesAccessor;
 
     private $prefix;
@@ -103,6 +99,12 @@ class RouteGroup
         $this->prefix = $prefix;
         $this->routes = [];
         $this->attributes = $attributes ?: new RouteAttributes();
+    }
+
+    public static function createWithGroup($prefix, RouteGroup $child) {
+        $group = new self($prefix);
+        $group->routes[] = $child;
+        return $group;
     }
 
     public function match($method, $path, $handler) {
@@ -128,7 +130,7 @@ class RouteGroup
     }
 
     public function getRoutes($prefix = '/') {
-        $prefix = joinUri($prefix, $this->prefix);
+        $prefix = _joinUri($prefix, $this->prefix);
 
         $routes = iter\flatten(iter\map(function($r) use ($prefix) {
             if ($r instanceof Route) {
@@ -162,13 +164,13 @@ class Route {
     }
 
     public function getPath() {
-        return $this->uri;
+        return $this->path;
     }
 
     public function withPathPrefix($prefix) {
         return new self(
             $this->methods,
-            joinUri($prefix, $this->path),
+            _joinUri($prefix, $this->path),
             $this->handler,
             $this->attributes
         );
@@ -202,4 +204,12 @@ trait RouteMatch {
     public function delete($uri, $handler) {
         return $this->match('DELETE', $uri, $handler);
     }
+}
+
+function _joinUri($a, $b) {
+    if ($b == '/') {
+        return $a;
+    }
+
+    return rtrim($a, '/') . '/' . ltrim($b, '/');
 }
