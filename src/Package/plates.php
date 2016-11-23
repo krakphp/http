@@ -12,13 +12,13 @@ class PlatesPackage extends Http\AbstractPackage
 
     public function __construct(Plates\Engine $plates, $config = []) {
         $this->plates = $plates;
-        $this->config = [
+        $this->config = $config + [
             'name' => 'plates',
             'error_paths' => [
                 '404' => 'errors/404',
                 '500' => 'errors/500',
             ]
-        ] + $config;
+        ];
     }
 
     public function with(Http\App $app) {

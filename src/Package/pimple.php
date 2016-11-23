@@ -12,11 +12,11 @@ class PimplePackage extends Http\AbstractPackage
 
     public function __construct(Container $container, $config = []) {
         $this->container = $container;
-        $this->config = [
+        $this->config = $config + [
             'prefix' => '',
             'method_sep' => '@',
             'name' => 'pimple',
-        ] + $config;
+        ];
     }
 
     public function with(Http\App $app) {
