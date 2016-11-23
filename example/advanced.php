@@ -12,7 +12,7 @@ class Controller {
 }
 
 $c = new Pimple\Container();
-$c['controller'] = function() {
+$c['krak.controller'] = function() {
     return new Controller();
 };
 $c['param'] = 4;
@@ -34,7 +34,7 @@ $app->get('/bad', function() {
 $app->get('/controller/{num}', 'controller@getAction');
 $app->with(Http\Package\std());
 $app->with(Http\Package\rest(null, JSON_PRETTY_PRINT));
-$app->with(Http\Package\pimple($c));
+$app->with(Http\Package\pimple($c, ['prefix' => 'krak.']));
 
 $app1 = new Http\App();
 $app1->with(Http\Package\std());
