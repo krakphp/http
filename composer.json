@@ -1,0 +1,39 @@
+{
+    "name": "krak/mw-http",
+    "description": "Http Middlewares and Application",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://gitlab.bighead.net/krak-mw/http",
+    "keywords": [
+        "middleware",
+        "framework",
+        "psr-7",
+        "http",
+        "micro"
+    ],
+    "authors": [
+        {
+            "name": "RJ Garcia",
+            "email": "rj@bighead.net"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Krak\\Mw\\Http\\": "src"
+        },
+        "files": ["src/inc.php"]
+    },
+    "require": {
+        "krak/mw": "^0.2.0",
+        "nikic/fast-route": "^1.0",
+        "nikic/iter": "^1.4",
+        "zendframework/zend-diactoros": "^1.3"
+    },
+    "require-dev": {
+        "guzzlehttp/psr7": "^1.3",
+        "league/plates": "^3.1",
+        "peridot-php/peridot": "^1.18",
+        "pimple/pimple": "^3.0",
+        "symfony/var-dumper": "^3.1"
+    }
+}
