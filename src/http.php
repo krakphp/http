@@ -9,12 +9,18 @@ use Krak\Mw,
 
 function mount($path, $mw) {
     if ($mw instanceof App) {
-        $mw = $mw->withPrefix($path);
+        $mw = $mw->withRoutePrefix($path);
     }
 
     return mw\filter($mw, function($req) use ($path) {
         return strpos($req->getUri()->getPath(), $path) === 0;
     });
+}
+
+function injectRequestAttribute($name, $value) {
+    return function($req, $next) use ($name, $value) {
+        return $next($req->withAttribute($name, $value));
+    };
 }
 
 function catchException($handler) {

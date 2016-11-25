@@ -15,9 +15,9 @@ class RESTPackage implements Http\Package
     }
 
     public function with(Http\App $app) {
-        $app->mws()->push(parseJson($app->responseFactory(), $this->error));
+        $app->push(parseJson($app['response_factory'], $this->error));
         $rf = http\jsonResponseFactory(
-            $app->responseFactory(),
+            $app['response_factory'],
             $this->json_opts
         );
 
@@ -34,8 +34,8 @@ class RESTPackage implements Http\Package
     }
 }
 
-function rest(...$args) {
-    return new RESTPackage(...$args);
+function rest($error = null, $json_opts = 0) {
+    return new RESTPackage($error, $json_opts);
 }
 
 function _error() {

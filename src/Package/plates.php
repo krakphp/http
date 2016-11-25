@@ -3,84 +3,99 @@
 namespace Krak\Mw\Http\Package;
 
 use Krak\Mw\Http,
+    Pimple,
     League\Plates;
 
 class PlatesPackage implements Http\Package
 {
-    private $plates;
+    private $ext;
     private $config;
 
-    public function __construct(Plates\Engine $plates, $config = []) {
-        $this->plates = $plates;
+    public function __construct(array $config = []) {
         $this->config = $config + [
-            'name' => 'plates',
-            'error_paths' => [
-                '404' => 'errors/404',
-                '500' => 'errors/500',
-            ]
+            '404' => 'errors/404',
+            '500' => 'errors/500',
         ];
     }
 
     public function with(Http\App $app) {
-        $rf = $app->responseFactory();
+        $app->register(
+            new PlatesServiceProvider(),
+            Http\Util\arrayFromPrefix($this->config, 'plates.')
+        );
+
         $app->notFoundHandler()->push(platesNotFoundHandler(
-            $app->responseFactory(),
-            $this->plates,
-            $this->config['error_paths']['404']
+            $app,
+            $this->config['404']
         ));
         $app->exceptionHandler()->push(platesExceptionHandler(
-            $app->responseFactory(),
-            $this->plates,
-            $this->config['error_paths']['500']
+            $app,
+            $this->config['500']
         ));
-        $app->marshalResponse()->push(platesMarshalResponse($this->plates));
-        $app->mws()->push(injectPlates($this->plates, $this->config['name']));
+        $app->marshalResponse()->push(platesMarshalResponse($app));
+        $app->push(injectPlatesRequest($app));
     }
 }
 
-function plates(...$args) {
-    return new PlatesPackage(...$args);
+class PlatesServiceProvider implements Pimple\ServiceProviderInterface
+{
+    public function register(Pimple\Container $app) {
+        $app['plates.views_path'] = null;
+        $app['plates.ext'] = 'php';
+        $app['plates'] = function($app) {
+            return new Plates\Engine($app['plates.views_path'], $app['plates.ext']);
+        };
+    }
+}
+
+function plates($views_path, array $config = []) {
+    return new PlatesPackage($views_path, $config);
 }
 
 /** injects pimple into the request */
-function injectPlates(Plates\Engine $plates, $name = 'plates') {
-    return function($req, $next) use ($plates, $name) {
-        $plates->addData(['request' => $req]);
-        return $next($req->withAttribute($name, $plates));
+function injectPlatesRequest($app) {
+    return function($req, $next) use ($app) {
+        $app['plates']->addData([
+            'request' => $req,
+            'app' => $app,
+        ]);
+        return $next($req);
     };
 }
 
 /** Allows the returning of a 2-tuple of path and data */
-function platesMarshalResponse(Plates\Engine $plates) {
-    return function($result, $rf, $req, $next) use ($plates) {
+function platesMarshalResponse($app) {
+    return function($result, $rf, $req, $next) use ($app) {
         $matches = Http\isTuple($result, "string", "array");
         if (!$matches) {
             return $next($result, $rf, $req, $next);
         }
 
         list($template, $data) = $result;
-        return $rf(200, [], $plates->render($template, $data));
+        return $rf(200, [], $app['plates']->render($template, $data));
     };
 }
 
-function platesNotFoundHandler($rf, Plates\Engine $plates, $path) {
-    return function($req, $result, $next) use ($rf, $plates, $path) {
-        if (!$plates->exists($path)) {
+function platesNotFoundHandler($app, $path) {
+    return function($req, $result, $next) use ($app, $path) {
+        if (!$app['plates']->exists($path)) {
             return $next($req, $result);
         }
 
-        return $rf(404, [], $plates->render($path, [
+        $rf = $app['response_factory'];
+        return $rf(404, [], $app['plates']->render($path, [
             'dispatch_result' => $result,
         ]));
     };
 }
-function platesExceptionHandler($rf, Plates\Engine $plates, $path) {
-    return function($req, $ex, $next) use ($rf, $plates, $path) {
-        if (!$plates->exists($path)) {
+function platesExceptionHandler($app, $path) {
+    return function($req, $ex, $next) use ($app, $path) {
+        if (!$app['plates']->exists($path)) {
             return $next($req, $ex);
         }
 
-        return $rf(500, [], $plates->render($path, [
+        $rf = $app['response_factory'];
+        return $rf(500, [], $app['plates']->render($path, [
             'exception' => $ex,
         ]));
     };
