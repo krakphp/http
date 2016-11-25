@@ -2,7 +2,8 @@
 
 namespace Krak\Mw\Http;
 
-use Krak\Mw;
+use Evenement,
+    Krak\Mw;
 
 /** HttpAppMw
 
@@ -21,7 +22,6 @@ use Krak\Mw;
     });
 
 */
-
 class AppStacks
 {
     public $exception_handler;
@@ -45,6 +45,15 @@ class AppStacks
     }
 }
 
+/** Http Application
+
+    The app is the central point for an http application. It manages core services to build
+    your application: Evenement event dispatcher, stacks of middleware,
+    and routes.
+
+    The app is just an interface into each of those separate components and also provides the glue
+    to serve applications.
+*/
 class App
 {
     use RouteMatch;
@@ -52,6 +61,7 @@ class App
     /** middleware stacks */
     private $stacks;
 
+    private $emitter;
     private $dispatcher_factory;
     private $response_factory;
     private $routes;
@@ -59,11 +69,12 @@ class App
     private $packages;
     private $frozen;
 
-    public function __construct(AppStacks $stacks = null, $dispatcher_factory = null, $response_factory = null, RouteGroup $routes = null) {
+    public function __construct(AppStacks $stacks = null, $dispatcher_factory = null, $response_factory = null, RouteGroup $routes = null, Evenement\EventEmitterInterface $emitter = null) {
         $this->stacks = $stacks ?: new AppStacks();
         $this->dispatcher_factory = $dispatcher_factory ?: dispatcherFactory();
         $this->response_factory = $response_factory ?: responseFactory();
         $this->routes = $routes ?: new RouteGroup();
+        $this->emitter = $emitter ?: new Evenement\EventEmitter();
         $this->packages = [];
         $this->frozen = false;
     }
@@ -80,6 +91,10 @@ class App
     /** returns the route group for this http app mw */
     public function routes() {
         return $this->routes;
+    }
+
+    public function eventEmitter() {
+        return $this->emitter;
     }
 
     public function withPrefix($prefix) {
@@ -136,7 +151,11 @@ class App
         $serve = $serve ?: server();
         $this->freeze();
         $mws = $this->mws();
-        return $serve($mws->compose());
+
+        $this->eventEmitter()->emit(Events::INIT, [$this]);
+        $res = $serve($mws->compose());
+        $this->eventEmitter()->emit(Events::FINISH, [$this]);
+        return $res;
     }
 
     /** Composes all of the middleware together in the main mws stack */
@@ -173,9 +192,7 @@ class App
             'invoke'
         );
 
-        foreach ($this->packages as $pkg) {
-            $pkg->withPostFreeze($this);
-        }
+        $this->eventEmitter()->emit(Events::FROZEN, [$this]);
 
         $this->frozen = true;
     }

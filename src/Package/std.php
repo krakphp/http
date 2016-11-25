@@ -4,7 +4,7 @@ namespace Krak\Mw\Http\Package;
 
 use Krak\Mw\Http;
 
-class StdPackage extends Http\AbstractPackage
+class StdPackage implements Http\Package
 {
     public function with(Http\App $app) {
         $app->exceptionHandler()

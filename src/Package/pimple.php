@@ -5,7 +5,7 @@ namespace Krak\Mw\Http\Package;
 use Krak\Mw\Http,
     Pimple\Container;
 
-class PimplePackage extends Http\AbstractPackage
+class PimplePackage implements Http\Package
 {
     private $container;
     private $config;
