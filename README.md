@@ -1,5 +1,7 @@
 # Mw Http
 
+[![Documentation Status](https://readthedocs.org/projects/mw-http/badge/?version=latest)](http://mw-http.readthedocs.io/en/latest/?badge=latest)
+
 Middlewares written for http applications
 
 ## Installation
@@ -23,16 +25,22 @@ $app->serve();
 
 More documentation coming soon! For now look over the examples and source code for information.
 
-## Packages
+## Documentation
 
-Packages are a way to extend an App. They can be as simple as adding a middleware to as complex as mounting an entire application on top of the app.
+View them at [http://mw-http.readthedocs.io/en/latest/](http://mw-http.readthedocs.io/en/latest/)
 
-### Standard
+Or build them locally:
 
-### Pimple
+```bash
+make doc
+```
 
-### Rest
+## Tests and Examples
 
-### Plates
+Run tests via:
 
-### Create Your Own
+```bash
+make test
+```
+
+View the test folder or example dir for examples on how the code is used.
