@@ -24,11 +24,33 @@ function callableInvokeAction($pass_params = true) {
 }
 
 /** this will inject parameters into the callable based on reflection */
-function paramInjectCallableInvokeAction() {
-    return function(ServerRequestInterface $req, $action, $params) {
-        // TODO: implement
+function resolveArgumentsCallableInvokeInvokeAction($resolve_arg) {
+    return function(ServerRequestInterface $req, $action, $params) use ($resolve_arg) {
+        if (!is_callable($action)) {
+            throw new \InvalidArgumentException('The action given was not a callable');
+        }
+
+        if (is_array($action)) {
+            $rf = new \ReflectionMethod($action[0], $action[1]);
+        } else {
+            $rf = new \ReflectionFunction($action);
+        }
+
+        $args = [];
+        foreach ($rf->getParameters() as $i => $arg_meta) {
+            $arg = $resolve_arg($arg_meta, $req, $params);
+            if (!count($arg)) {
+                throw new \RuntimeException(sprintf('Action argument %d is unable to be resolved.', $i));
+            }
+
+            $args[] = $arg[0];
+        }
+
+        return $action(...$args);
     };
 }
+
+
 
 /** try to get the action out of a pimple container and then delegate the calling to the next
     invoker. If you pass in null for $method_sep, then it won't try and split the method from
