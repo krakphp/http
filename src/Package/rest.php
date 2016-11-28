@@ -4,7 +4,7 @@ namespace Krak\Mw\Http\Package;
 
 use Krak\Mw\Http;
 
-class RESTPackage extends Http\AbstractPackage
+class RESTPackage implements Http\Package
 {
     private $error;
     private $json_opts;

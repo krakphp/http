@@ -24,6 +24,7 @@
         "files": ["src/inc.php"]
     },
     "require": {
+        "evenement/evenement": "^2.0",
         "krak/mw": "^0.2.0",
         "nikic/fast-route": "^1.0",
         "nikic/iter": "^1.4",

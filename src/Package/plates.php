@@ -5,7 +5,7 @@ namespace Krak\Mw\Http\Package;
 use Krak\Mw\Http,
     League\Plates;
 
-class PlatesPackage extends Http\AbstractPackage
+class PlatesPackage implements Http\Package
 {
     private $plates;
     private $config;
