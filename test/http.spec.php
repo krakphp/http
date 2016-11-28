@@ -15,4 +15,7 @@ describe('Mw Http', function() {
             ));
         });
     });
+    describe('Resolve Argument', function() {
+        require_once __DIR__ . '/resolve-argument.php';
+    });
 });

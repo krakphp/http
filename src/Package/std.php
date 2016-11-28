@@ -31,7 +31,7 @@ class StdPackage implements Http\Package
             ->unshift(Http\redirectMarshalResponse(), 1)
             ->unshift(Http\httpTupleMarshalResponse(), 1);
         $app->invokeAction()
-            ->push(Http\callableInvokeAction())
+            ->push(Http\callableInvokeAction(), 0, 'invoke')
             ->push(Http\pimpleInvokeAction(
                 $app->getContainer(),
                 $this->config['controller_prefix'],
@@ -69,11 +69,11 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
         $app['freezer'] = function() {
             return stdFreezer();
         };
-        $app['stacks.exception_handler'] = function() { return Mw\stack(); };
-        $app['stacks.invoke_action'] = function() { return Mw\stack(); };
-        $app['stacks.not_found_handler'] = function() { return Mw\stack(); };
-        $app['stacks.marshal_response'] = function() { return Mw\stack(); };
-        $app['stacks.http'] = function() { return Mw\stack(); };
+        $app['stacks.exception_handler'] = function() { return Mw\stack('Exception Handler'); };
+        $app['stacks.invoke_action'] = function() { return Mw\stack('Invoke Action'); };
+        $app['stacks.not_found_handler'] = function() { return Mw\stack('Not Found Handler'); };
+        $app['stacks.marshal_response'] = function() { return Mw\stack('Marshal Response'); };
+        $app['stacks.http'] = function() { return Mw\stack('Http'); };
     }
 }
 

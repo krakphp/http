@@ -11,7 +11,7 @@ class RouteAttributes
     public $parent;
 
     public function __construct(Mw\MwStack $mws = null) {
-        $this->mws = $mws ?: mw\stack();
+        $this->mws = $mws ?: mw\stack('Route Stack');
     }
 
     public static function createChild(RouteAttributes $parent) {
