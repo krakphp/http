@@ -14,7 +14,7 @@ interface Server {
 /** Run the app using Diactoros PSR7 system */
 function diactorosServer(
     Diactoros\Response\EmitterInterface $emitter = null,
-    $req_factory = null
+    callable $req_factory = null
 ) {
     $emitter = $emitter ?: new Diactoros\Response\SapiEmitter();
     $req_factory = $req_factory ?: function() {

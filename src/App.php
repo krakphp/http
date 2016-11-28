@@ -6,29 +6,6 @@ use Pimple,
     Evenement\EventEmitterInterface,
     Krak\Mw;
 
-/** Http Application
-
-    The app is the central point for an http application. It manages core services to build
-    your application: Evenement event dispatcher, stacks of middleware,
-    and routes.
-
-    The app is just an interface into each of those separate components and also provides the glue
-    to serve applications.
-
-    usage:
-
-    ```
-    $app = new Http\App();
-    $app->with(Http\Package\std());
-    $app->get('/', function() {
-        return ['home', []];
-    });
-    $app->get('/a', 'service@getAAction');
-
-    $app->push(function($req, $next) {
-
-    });
-*/
 class App implements \ArrayAccess, EventEmitterInterface
 {
     use RouteMatch;
@@ -83,42 +60,21 @@ class App implements \ArrayAccess, EventEmitterInterface
         return $this;
     }
 
-    /** returns the middleware stack of exception handlers */
-    public function exceptionHandler() {
-        return $this->container['stacks.exception_handler'];
-    }
-    /** returns the invokeAction middleware exception handlers */
-    public function invokeAction() {
-        return $this->container['stacks.invoke_action'];
-    }
-    /** returns the notFound middleware stack */
-    public function notFoundHandler() {
-        return $this->container['stacks.not_found_handler'];
-    }
-    /** returns the marshalResponse middleware stack */
-    public function marshalResponse() {
-        return $this->container['stacks.marshal_response'];
-    }
-    /** returns the http middleware stack */
-    public function http() {
-        return $this->container['stacks.http'];
-    }
-
     /** Forward to main http stack */
-    public function push(...$args) {
-        return $this->http()->push(...$args);
+    public function push(callable $mw, $sort = 0, $name = null) {
+        return $this['stacks.http']->push($mw, $sort, $name);
     }
     /** Forward to main http stack */
-    public function pop(...$args) {
-        return $this->http()->push(...$args);
+    public function pop($sort = 0) {
+        return $this['stacks.http']->push($sort);
     }
     /** Forward to main http stack */
-    public function unshift(...$args) {
-        return $this->http()->unshift(...$args);
+    public function unshift(callable $mw, $sort = 0, $name = null) {
+        return $this['stacks.http']->unshift($mw, $sort, $name);
     }
     /** Forward to main http stack */
-    public function shift(...$args) {
-        return $this->http()->shift(...$args);
+    public function shift($sort = 0) {
+        return $this['stacks.http']->shift($sort);
     }
 
     /** forward to Pimple */
@@ -164,7 +120,7 @@ class App implements \ArrayAccess, EventEmitterInterface
     /** middleware interface */
     public function __invoke(...$params) {
         $this->freeze();
-        $http = $this->http();
+        $http = $this['stacks.http'];
         return $http(...$params);
     }
 
@@ -172,7 +128,7 @@ class App implements \ArrayAccess, EventEmitterInterface
     public function serve($serve = null) {
         $serve = $serve ?: server();
         $this->freeze();
-        $mws = $this->http();
+        $mws = $this['stacks.http'];
 
         $this->emit(Events::INIT, [$this]);
         $res = $serve($mws->compose());
@@ -186,28 +142,10 @@ class App implements \ArrayAccess, EventEmitterInterface
             return;
         }
 
-        $freeze = $this->container['freezer'];
-        $freeze($this);
+        $freezer = $this->container['freezer'];
+        $freezer->freezeApp($this);
         $this->frozen = true;
 
         $this->emit(Events::FROZEN, [$this]);
     }
-}
-
-function stdApp() {
-    $app = new App();
-    $app->with(Package\std());
-    return $app;
-}
-
-function restApp() {
-    $app = stdApp();
-    $app->with(Package\rest());
-    return $app;
-}
-
-function webApp() {
-    $app = stdApp();
-    $app->with(Package\plates());
-    return $app;
 }

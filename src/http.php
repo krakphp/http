@@ -6,6 +6,24 @@ use Krak\Mw,
     Psr\Http\Message\ServerRequestInterface,
     Psr\Http\Message\ResponseInterface;
 
+function stdApp() {
+    $app = new App();
+    $app->with(Package\std());
+    return $app;
+}
+
+function restApp() {
+    $app = stdApp();
+    $app->with(Package\rest());
+    return $app;
+}
+
+function webApp() {
+    $app = stdApp();
+    $app->with(Package\plates());
+    return $app;
+}
+
 
 function mount($path, $mw) {
     if ($mw instanceof App) {
