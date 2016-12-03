@@ -127,15 +127,14 @@ class App implements \ArrayAccess, EventEmitterInterface
     }
 
     /** serves an app with a default server if non is provided */
-    public function serve($serve = null) {
-        $serve = $serve ?: server();
+    public function serve() {
+        $serve = $this['server'];
         $this->freeze();
         $mws = $this['stacks.http'];
 
         $this->emit(Events::INIT, [$this]);
-        $res = $serve($mws->compose());
+        $serve($mws->compose());
         $this->emit(Events::FINISH, [$this]);
-        return $res;
     }
 
     /** Composes all of the middleware together in the main mws stack */

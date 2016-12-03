@@ -19,6 +19,9 @@ These are the following services that are required to be set before the app can 
     This needs to be a service defined as ``Krak\Mw\MwStack``
 ``$app['freezer']``
     This needs to be a service defined as ``Krak\Mw\Http\Freezer``
+``$app['server']``
+    This needs to be a service defined as ``Krak\Mw\Http\Sever``. Any normal callable will work as well as long
+    as the function signature matches the Server signature.
 
 usage:
 

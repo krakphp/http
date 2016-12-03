@@ -38,5 +38,8 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
         $app['stacks.http'] = function() {
             return Mw\stack('Http');
         };
+        $app['server'] = function() {
+            return Http\server();
+        };
     }
 }
