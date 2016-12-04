@@ -6,12 +6,14 @@
 Welcome to Mw Http's documentation!
 ===================================
 
-Middlewares written for http applications
+Mw Http is a web framework designed around Middleware (Mw). The core of the system is just a stack of http middleware that accept PSR-7 requests and return PSR-7 responses.
+
+The system was designed to be simple in design, yet powerful in nature. One of the main features of the Mw\\Http framework is the Package system. Similar to Symfony Bundles, they allow incredible extension to the framework structure allowing developers to create any type of extension large or small with ease.
 
 Installation
 ~~~~~~~~~~~~
 
-Install via composer at `krak/mw-http`
+Install via composer at ``krak/mw-http``
 
 Basic Usage
 ~~~~~~~~~~~
@@ -45,3 +47,4 @@ More documentation coming soon! For now look over the examples and source code f
    resolve-argument
    response-factory
    router
+   web-server-integration

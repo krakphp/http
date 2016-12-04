@@ -16,7 +16,7 @@ These are the following services that are required to be set before the app can 
 ``$app['event_emitter']``
     This needs to be a service defined as ``Evenement\EventEmitterInterface``
 ``$app['stacks.http']``
-    This needs to be a service defined as ``Krak\Mw\MwStack``
+    This needs to be a **parameter** defined as ``Krak\Mw\MwStack``
 ``$app['freezer']``
     This needs to be a service defined as ``Krak\Mw\Http\Freezer``
 ``$app['server']``

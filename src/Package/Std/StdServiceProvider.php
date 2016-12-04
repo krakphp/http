@@ -11,6 +11,13 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
 {
     public function register(Pimple\Container $app) {
         $app['routes'] = new Http\RouteGroup();
+
+        $app['stacks.exception_handler'] = $app->protect(Mw\stack('Exception Handler'));
+        $app['stacks.invoke_action'] = $app->protect(Mw\stack('Invoke Action'));
+        $app['stacks.not_found_handler'] = $app->protect(Mw\stack('Not Found Handler'));
+        $app['stacks.marshal_response'] = $app->protect(Mw\stack('Marshal Response'));
+        $app['stacks.http'] = $app->protect(Mw\stack('Http'));
+
         $app['dispatcher_factory'] = function() {
             return Http\dispatcherFactory();
         };
@@ -22,21 +29,6 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
         };
         $app['freezer'] = function() {
             return new StdFreezer();
-        };
-        $app['stacks.exception_handler'] = function() {
-            return Mw\stack('Exception Handler');
-        };
-        $app['stacks.invoke_action'] = function() {
-            return Mw\stack('Invoke Action');
-        };
-        $app['stacks.not_found_handler'] = function() {
-            return Mw\stack('Not Found Handler');
-        };
-        $app['stacks.marshal_response'] = function() {
-            return Mw\stack('Marshal Response');
-        };
-        $app['stacks.http'] = function() {
-            return Mw\stack('Http');
         };
         $app['server'] = function() {
             return Http\server();
