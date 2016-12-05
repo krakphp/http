@@ -51,7 +51,7 @@ function redirectMarshalResponse($valid_redirects = [300, 301, 302, 303, 304, 30
     return function($result, $rf, $req, $next) use ($valid_redirects) {
         $is_redirect = isTuple($result, "integer", "string");
 
-        if (!$is_redirect) {
+        if (!$is_redirect || !in_array($result[0], $valid_redirects)) {
             return $next($result, $rf, $req, $next);
         }
 

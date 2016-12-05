@@ -58,6 +58,12 @@ $app1->get('/view-http', function() {
         ['test', ['var' => 'Check the http status']]
     ];
 });
+$app1->get('/404', function() {
+    return [404, '404 Page!'];
+});
+$app1->get('/302', function() {
+    return [302, '/admin/404'];
+});
 $app1->get('/ex', function() {
     throw new \Exception('Somthing Bad Happened!');
 });
