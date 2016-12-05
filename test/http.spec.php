@@ -18,4 +18,7 @@ describe('Mw Http', function() {
     describe('Resolve Argument', function() {
         require_once __DIR__ . '/resolve-argument.php';
     });
+    describe('App', function() {
+        require_once __DIR__ . '/app.php';
+    });
 });

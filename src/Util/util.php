@@ -46,3 +46,11 @@ function isTuple($tuple, ...$types) {
 
     return true;
 }
+
+function joinUri($a, $b) {
+    if ($b == '/') {
+        return $a;
+    }
+
+    return rtrim($a, '/') . '/' . ltrim($b, '/');
+}

@@ -36,6 +36,29 @@ class App implements \ArrayAccess, EventEmitterInterface
         return $app;
     }
 
+    /** mounts a middleware onto the stack at uri prefix. The mounted middleware is
+        pushed on the main http stack and will be executed before the standard routing
+        middleware. This is useful for mounting other applications or authentication
+        middleware */
+    public function mount($prefix, $mw) {
+        $mw = function($req, $next) use ($prefix, $mw) {
+            if (!$mw instanceof self) {
+                return $mw($req, $next);
+            }
+
+            $prefix = Util\joinUri($this['routes']->getPrefix(), $prefix);
+            $mw = $mw->withRoutePrefix($prefix);
+            return $mw($req, $next);
+        };
+
+        $mw = mw\filter($mw, function($req) use ($prefix, $mw) {
+            $prefix = Util\joinUri($this['routes']->getPrefix(), $prefix);
+            return strpos($req->getUri()->getPath(), $prefix) === 0;
+        });
+
+        return $this->push($mw);
+    }
+
     /** forward to the Event Emitter */
     public function on($event, callable $listener) {
         return $this['event_emitter']->on($event, $listener);

@@ -68,5 +68,5 @@ $app1->get('/ex', function() {
     throw new \Exception('Somthing Bad Happened!');
 });
 
-$app->push(Http\mount('/admin', $app1));
+$app->mount('/admin', $app1);
 $app->serve();
