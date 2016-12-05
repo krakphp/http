@@ -130,7 +130,7 @@ class RouteGroup
     }
 
     public function getRoutes($prefix = '/') {
-        $prefix = _joinUri($prefix, $this->prefix);
+        $prefix = Util\joinUri($prefix, $this->prefix);
 
         $routes = iter\flatten(iter\map(function($r) use ($prefix) {
             if ($r instanceof Route) {
@@ -142,6 +142,10 @@ class RouteGroup
         }, $this->routes));
 
         return iter\toArray($routes);
+    }
+
+    public function getPrefix() {
+        return $this->prefix;
     }
 }
 
@@ -170,7 +174,7 @@ class Route {
     public function withPathPrefix($prefix) {
         return new self(
             $this->methods,
-            _joinUri($prefix, $this->path),
+            Util\joinUri($prefix, $this->path),
             $this->handler,
             $this->attributes
         );
@@ -204,12 +208,4 @@ trait RouteMatch {
     public function delete($uri, $handler) {
         return $this->match('DELETE', $uri, $handler);
     }
-}
-
-function _joinUri($a, $b) {
-    if ($b == '/') {
-        return $a;
-    }
-
-    return rtrim($a, '/') . '/' . ltrim($b, '/');
 }
