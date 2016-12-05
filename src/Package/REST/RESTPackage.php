@@ -15,19 +15,21 @@ class RESTPackage implements Http\Package
     }
 
     public function with(Http\App $app) {
-        $app->push(parseJson($app['response_factory'], $this->error));
-        $rf = http\jsonResponseFactory(
+        $app['rest.error'] = $app->protect($this->error);
+        $app['rest.response_factory'] = $app->protect(http\jsonResponseFactory(
             $app['response_factory'],
             $this->json_opts
-        );
+        ));
+
+        $app->push(parseJson($app['rest.response_factory'], $app['rest.error']));
 
         $app['stacks.exception_handler']->push(restExceptionHandler(
-            $rf,
-            $this->error
+            $app['rest.response_factory'],
+            $app['rest.error']
         ));
         $app['stacks.not_found_handler']->push(restNotFoundHandler(
-            $rf,
-            $this->error
+            $app['rest.response_factory'],
+            $app['rest.error']
         ));
         $app['stacks.marshal_response']
             ->push(jsonMarshalResponse($this->json_opts));

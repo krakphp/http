@@ -21,4 +21,9 @@ describe('Mw Http', function() {
     describe('App', function() {
         require_once __DIR__ . '/app.php';
     });
+    describe('Package', function() {
+        describe('REST', function() {
+            require_once __DIR__ . '/package/rest.php';
+        });
+    });
 });

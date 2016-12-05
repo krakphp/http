@@ -11,6 +11,7 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
 {
     public function register(Pimple\Container $app) {
         $app['routes'] = new Http\RouteGroup();
+        $app['response_factory'] = $app->protect(Http\responseFactory());
 
         $app['stacks.exception_handler'] = $app->protect(Mw\stack('Exception Handler'));
         $app['stacks.invoke_action'] = $app->protect(Mw\stack('Invoke Action'));
@@ -20,9 +21,6 @@ class StdServiceProvider implements Pimple\ServiceProviderInterface
 
         $app['dispatcher_factory'] = function() {
             return Http\dispatcherFactory();
-        };
-        $app['response_factory'] = function() {
-            return Http\responseFactory();
         };
         $app['event_emitter'] = function() {
             return new EventEmitter();

@@ -12,6 +12,8 @@ Here all of the defined services and parameters
 
 routes
     instance of RouteGroup
+response_factory
+    instance of ResponseFactory
 dispatcher_factory
     a dispatcher factory
 event_emitter
