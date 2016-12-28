@@ -4,6 +4,8 @@ namespace Krak\Mw\Http;
 
 use Pimple,
     Evenement\EventEmitterInterface,
+    Krak\Mw\Http\Mw\HttpAppContext,
+    Krak\Mw\Http\Mw\HttpAppLink,
     Krak\Mw;
 
 class App implements \ArrayAccess, EventEmitterInterface
@@ -18,6 +20,22 @@ class App implements \ArrayAccess, EventEmitterInterface
     public function __construct(Pimple\Container $container = null) {
         $this->container = $container ?: new Pimple\Container();
         $this->frozen = false;
+        $this->defineStack('stacks.http', 'Http');
+    }
+
+    /** creates a pimple aware middleware stack defined in the pimple container */
+    public function createStack($name, array $entries = []) {
+        return mw\stack(
+            $name,
+            $entries,
+            new HttpAppContext($this),
+            HttpAppLink::class
+        );
+    }
+
+    /** defines a pimple aware stack in the container */
+    public function defineStack($key, $name, array $entries = []) {
+        $this[$key] = $this->protect($this->createStack($name, $entries));
     }
 
     /** forwards to the RouteGroup */
@@ -42,13 +60,13 @@ class App implements \ArrayAccess, EventEmitterInterface
         middleware */
     public function mount($prefix, $mw) {
         $mw = function($req, $next) use ($prefix, $mw) {
-            if (!$mw instanceof self) {
-                return $mw($req, $next);
+            if ($mw instanceof self) {
+                $prefix = Util\joinUri($this['routes']->getPrefix(), $prefix);
+                $mw = $mw->withRoutePrefix($prefix);
             }
 
-            $prefix = Util\joinUri($this['routes']->getPrefix(), $prefix);
-            $mw = $mw->withRoutePrefix($prefix);
-            return $mw($req, $next);
+            $next = $next->chain($mw);
+            return $next($req);
         };
 
         $mw = mw\filter($mw, function($req) use ($prefix, $mw) {
@@ -79,6 +97,11 @@ class App implements \ArrayAccess, EventEmitterInterface
         return $this['event_emitter']->emit($event, $arguments);
     }
 
+    public function response($status, array $headers = [], $body = null) {
+        $rf = $this['response_factory'];
+        return $rf($status, $headers, $body);
+    }
+
     /** allows modifications to App in a unified way. This  */
     public function with(Package $pkg) {
         $pkg->with($this);
@@ -86,7 +109,7 @@ class App implements \ArrayAccess, EventEmitterInterface
     }
 
     /** Forward to main http stack */
-    public function push(callable $mw, $sort = 0, $name = null) {
+    public function push($mw, $sort = 0, $name = null) {
         return $this['stacks.http']->push($mw, $sort, $name);
     }
     /** Forward to main http stack */
@@ -94,7 +117,7 @@ class App implements \ArrayAccess, EventEmitterInterface
         return $this['stacks.http']->push($sort);
     }
     /** Forward to main http stack */
-    public function unshift(callable $mw, $sort = 0, $name = null) {
+    public function unshift($mw, $sort = 0, $name = null) {
         return $this['stacks.http']->unshift($mw, $sort, $name);
     }
     /** Forward to main http stack */

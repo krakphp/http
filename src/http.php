@@ -54,12 +54,11 @@ function injectRouteMiddleware($prefix = '_') {
     return function($req, $next) use ($prefix) {
         $attributes = $req->getAttribute('route.attributes');
 
-        if (!count($attributes->mws)) {
-            return $next($req);
+        if (count($attributes->mws)) {
+            $next = $next->chain($attributes->mws);
         }
 
-        $mws = $attributes->mws;
-        return $mws($req, $next);
+        return $next($req);
     };
 }
 
