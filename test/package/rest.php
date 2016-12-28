@@ -1,6 +1,7 @@
 <?php
 
 use Krak\Mw\Http,
+    Krak\Mw,
     GuzzleHttp\Psr7\ServerRequest;
 
 beforeEach(function() {
@@ -10,6 +11,7 @@ beforeEach(function() {
 });
 it('Returns 415 if content-type is not JSON', function() {
     $app = $this->app;
-    $resp = $app(new ServerRequest('POST', '/a', [], '[1]'), function() {});
+    $handler = mw\compose([$app]);
+    $resp = $handler(new ServerRequest('POST', '/a', [], '[1]'));
     assert($resp->getStatusCode() == 415);
 });

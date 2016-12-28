@@ -19,6 +19,11 @@ class StdPackage implements Http\Package
     public function with(Http\App $app) {
         $app->register(new StdServiceProvider());
 
+        $app->defineStack('stacks.exception_handler', 'Exception Handler');
+        $app->defineStack('stacks.invoke_action', 'Invoke Action');
+        $app->defineStack('stacks.not_found_handler', 'Not Found Handler');
+        $app->defineStack('stacks.marshal_response', 'Marshal Response');
+
         $app['stacks.exception_handler']
             ->push(stdExceptionHandler($app['response_factory']));
         $app['stacks.not_found_handler']

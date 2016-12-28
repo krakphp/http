@@ -18,6 +18,21 @@ class App implements \ArrayAccess, EventEmitterInterface
     public function __construct(Pimple\Container $container = null) {
         $this->container = $container ?: new Pimple\Container();
         $this->frozen = false;
+        $this->defineStack('stacks.http', 'Http');
+    }
+
+    /** creates a pimple aware middleware stack defined in the pimple container */
+    public function createStack($name, array $entries = []) {
+        return mw\stack(
+            $name,
+            $entries,
+            Mw\pimpleAwareInvoke($this->container)
+        );
+    }
+
+    /** defines a pimple aware stack in the container */
+    public function defineStack($key, $name, array $entries = []) {
+        $this[$key] = $this->protect($this->createStack($name, $entries));
     }
 
     /** forwards to the RouteGroup */
@@ -41,14 +56,15 @@ class App implements \ArrayAccess, EventEmitterInterface
         middleware. This is useful for mounting other applications or authentication
         middleware */
     public function mount($prefix, $mw) {
-        $mw = function($req, $next) use ($prefix, $mw) {
+        $mw = function(...$all_params) use ($prefix, $mw) {
+            list($req, $next, $invoke) = $all_params;
             if (!$mw instanceof self) {
-                return $mw($req, $next);
+                return $invoke($mw, ...$all_params);
             }
 
             $prefix = Util\joinUri($this['routes']->getPrefix(), $prefix);
             $mw = $mw->withRoutePrefix($prefix);
-            return $mw($req, $next);
+            return $invoke($mw, ...$all_params);
         };
 
         $mw = mw\filter($mw, function($req) use ($prefix, $mw) {
@@ -86,7 +102,7 @@ class App implements \ArrayAccess, EventEmitterInterface
     }
 
     /** Forward to main http stack */
-    public function push(callable $mw, $sort = 0, $name = null) {
+    public function push($mw, $sort = 0, $name = null) {
         return $this['stacks.http']->push($mw, $sort, $name);
     }
     /** Forward to main http stack */
@@ -94,7 +110,7 @@ class App implements \ArrayAccess, EventEmitterInterface
         return $this['stacks.http']->push($sort);
     }
     /** Forward to main http stack */
-    public function unshift(callable $mw, $sort = 0, $name = null) {
+    public function unshift($mw, $sort = 0, $name = null) {
         return $this['stacks.http']->unshift($mw, $sort, $name);
     }
     /** Forward to main http stack */

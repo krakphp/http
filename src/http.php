@@ -51,7 +51,8 @@ function catchException($handler) {
     };
 }
 function injectRouteMiddleware($prefix = '_') {
-    return function($req, $next) use ($prefix) {
+    return function(...$params) use ($prefix) {
+        list($req, $next, $invoke) = $params;
         $attributes = $req->getAttribute('route.attributes');
 
         if (!count($attributes->mws)) {
@@ -59,7 +60,7 @@ function injectRouteMiddleware($prefix = '_') {
         }
 
         $mws = $attributes->mws;
-        return $mws($req, $next);
+        return $invoke($mws, ...$params);
     };
 }
 

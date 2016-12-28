@@ -3,6 +3,13 @@
 use Krak\Mw\Http,
     GuzzleHttp\Psr7\ServerRequest;
 
+use function Krak\Mw\compose;
+
+function composeApp(Http\App $app) {
+    $app->freeze();
+    return $app['stacks.http']->compose();
+}
+
 describe('->mount', function() {
     it('mounts a middleware onto the app', function() {
         $app = new Http\App();
@@ -12,8 +19,8 @@ describe('->mount', function() {
         });
         $app->get('/a/1', function() { assert(false); });
         $req = new ServerRequest('GET', '/a/2');
-        $res = $app($req, function() {});
-        assert($app($req, function() {}) == 1);
+        $handler = composeApp($app);
+        assert($handler($req) == 1);
     });
     it('allows for recursive mounts', function() {
         $app1 = new Http\App();
@@ -31,7 +38,8 @@ describe('->mount', function() {
 
         $app3->get('/c/1', function() { assert(false); });
         $req = new ServerRequest('GET', '/a/b/c/d');
-        assert($app1($req, function() {}) == 4);
+        $handler = composeApp($app1);
+        assert($handler($req) == 4);
     });
     it('allows for recursive mounted routes', function() {
         $app1 = new Http\App();
@@ -49,6 +57,28 @@ describe('->mount', function() {
         $app3['stacks.marshal_response']->push(function($res) { return $res; });
 
         $req = new ServerRequest('GET', '/a/b/c/d');
-        assert($app1($req, function() {}) == 2);
+        $handler = composeApp($app1);
+        assert($handler($req) == 2);
     });
+});
+it('allows pimple aware routes', function() {
+    $app = new Http\App();
+    $app->with(Http\Package\Std());
+    $app['attr_mw'] = $app->protect(function($req, $next) {
+        return $next($req->withAttribute(
+            'count',
+            $req->getAttribute('count') + 1
+        ));
+    });
+    $app->push('attr_mw');
+    $app['routes']->push('attr_mw');
+    $app->get('/', function($req) {
+        return $req->getAttribute('count');
+    });
+    $app['stacks.marshal_response']->push(function($r) { return $r; });
+
+    $req = new ServerRequest('GET', '/');
+    $handler = composeApp($app);
+
+    assert($handler($req) == 2);
 });
