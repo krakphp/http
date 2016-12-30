@@ -8,6 +8,7 @@ class AutoArgsPackage implements Http\Package
 {
     public function with(Http\App $app) {
         $app->register(new AutoArgsServiceProvider());
+        $app->defineStack('stacks.resolve_argument', 'Resolve Argument');
 
         $app['stacks.resolve_argument']
             ->push(defaultValueResolveArgument(), -1)

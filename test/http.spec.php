@@ -9,9 +9,9 @@ describe('Mw Http', function() {
             $mw = http\mount('/api', function($req) {
                 return $req->getUri()->getPath();
             });
-            assert('/api/user' == $mw(
-                new GuzzleHttp\Psr7\ServerRequest('GET', '/api/user'),
-                function() {}
+            $handler = mw\compose([$mw]);
+            assert('/api/user' == $handler(
+                new GuzzleHttp\Psr7\ServerRequest('GET', '/api/user')
             ));
         });
     });

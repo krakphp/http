@@ -1,5 +1,6 @@
-Application
-===========
+===
+App
+===
 
 The app is the central point for an http application. It manages core services to build
 your application: Pimple Container, Evenement event dispatcher, stacks of middleware,
@@ -13,6 +14,8 @@ These are the following services that are required to be set before the app can 
 
 ``$app['routes']``
     This needs to be **parameter** (not a service) set to an instance ``Krak\Mw\Http\RouteGroup``.
+``$app['response_factory']``
+    This needs to be a **parameter** defined as a ``Krak\Mw\Http\responseFactory``
 ``$app['event_emitter']``
     This needs to be a service defined as ``Evenement\EventEmitterInterface``
 ``$app['stacks.http']``
@@ -43,7 +46,7 @@ The App at its core manages a stack of http middleware. When the ``serve()`` fun
 The App also servers as a callable middleware that you can use in any place you would use a normal middleware. This is very useful for things like Mounting.
 
 Mounting
---------
+========
 
 Http Apps allow the mounting of middleware onto the app itself. You mount the middleware on a prefix. This is similar to adding middleware onto route groups, but it is different because these middleware are executed before the routing phase. This fact is crucial because it allows you to perform authentication before routing and mount full featured apps without having to go through the routing process of the base app.
 
@@ -90,3 +93,38 @@ example:
     $app->serve();
 
 In this example, all calls to the ``/api*`` will be handled via the ``$api`` application instead of the base ``$app``. Every call to ``/api/users*`` will now have to go through Basic authentication before the routing starts.
+
+Pimple Aware Middleware
+=======================
+
+API
+===
+
+class App implements \\ArrayAccess, Evenement\\EventEmitterInterface
+--------------------------------------------------------------------
+
+__construct(Pimple\\Container $container = null)
+    Entry point into creating the app. You can optionally pass in a container if you'd like. Else one will be created.
+createStack($name, array $entries = [])
+    Creates a Pimple aware ``Krak\Mw\MwStack`` with the app's Pimple Container.
+
+    .. code-block:: php
+
+        <?php
+
+        $app = new Krak\Mw\Http\App();
+        $stack = $app->createStack('Stack');
+        $stack->push('pimple_service_name');
+
+    If the ``pimple_service_name`` is defined in the container, then it will use that for the middleware.
+
+defineStack($key, $name, array $entries = [])
+    Defines a Pimple aware stack as a parameter into the pimple container. This is just a convenience method for defining stacks on the container because each stack needs to be protected via ``$container->protect($stack)``.
+
+    .. code-block:: php
+
+        <?php
+
+        $app = new Krak\Mw\Http\App();
+        $app->defineStack('my_stack', 'Stack');
+        $app['my_stack']->push(function() {});
