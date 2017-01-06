@@ -10,7 +10,7 @@ class App implements \ArrayAccess, EventEmitterInterface
 {
     use RouteMatch;
 
-    const VERSION = '0.2.4';
+    const VERSION = '0.2.5-dev';
 
     private $container;
     private $frozen;
