@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+Completely re-tooled the entire package. This no longer holds any micro framework code. [Krak\\Lava](https://github.com/krakphp/lava) is the replacement for this.
+
+- Converted functions for dispatching/server/response-factory into classes with proper interfaces since you typically won't need to make your own very frequently
+- Removed all framework related code
+- Removed all unneeded composer dependencies (only nikic/iter remains)
+- Routing is now a lot simpler and not dependent on any libraries like `krak/mw`. They are simply value objects now.
+- This package is now at `krak/http` instead of `krak/mw-http`
+
 ### Added
 
 - This CHANGELOG
+- ResponseFactoryStore for easily storing and utilizing response factories.
 
 ## [0.2.4] - 2016-12-05
 
