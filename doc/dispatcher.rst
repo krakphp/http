@@ -1,4 +1,0 @@
-Dispatcher
-==========
-
-TODO

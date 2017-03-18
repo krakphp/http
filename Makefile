@@ -1,7 +1,10 @@
 
 PERIDOT = ./vendor/bin/peridot
 
-.PHONY: test doc
+.PHONY: test doc inc
+
+inc:
+	./vendor/bin/php-inc php-inc:generate -o src/inc.php src
 
 test:
 	$(PERIDOT) test
