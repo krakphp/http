@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2017-03-18
+
 ### Changed
 
 Completely re-tooled the entire package. This no longer holds any micro framework code. [Krak\\Lava](https://github.com/krakphp/lava) is the replacement for this.
