@@ -30,8 +30,8 @@ $rf = new ResponseFactory\GuzzleResponseFactory();
 
 // adds html content-type header
 $html_rf = new ResponseFactory\HtmlResponseFactory($rf);
-// json encodes the body and add json content-type header
-$json_rf = new ResponseFactory\JsonResponseFactory($rf);
+// json encodes the body and add json content-type header. Accepts json_encode_options as second parameter
+$json_rf = new ResponseFactory\JsonResponseFactory($rf, JSON_PRETTY_PRINT);
 // adds text content-type header
 $text_rf = new ResponseFactory\TextResponseFactory($rf);
 
@@ -85,12 +85,10 @@ $dispatch_factory = new Dispatcher\FastRoute\FastRouteDispatcherFactory();
 $dispatch = $dispatch_factory->createDispatcher($routes);
 $res = $dispatch->dispatch($req);
 
-/**
-$res->status_code
-$res->matched_route->route
-$res->matched_route->params
-$res->allowed_methods /* if status code is a 405 response */
-*/
+// $res->status_code
+// $res->matched_route->route
+// $res->matched_route->params
+// $res->allowed_methods /* if status code is a 405 response */
 ```
 
 ### Server
