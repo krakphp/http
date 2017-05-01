@@ -10,4 +10,7 @@ describe('Krak Http', function() {
     describe('Route', function() {
         require_once __DIR__ . '/route.php';
     });
+    describe('Middleware', function() {
+        require_once __DIR__ . '/middleware.php';
+    });
 });

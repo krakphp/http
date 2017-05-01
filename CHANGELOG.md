@@ -1,13 +1,13 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
+## Unreleased
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
+### Added
 
-## [Unreleased]
+- HttpServiceProvider which provides basic services of the library
+- serveStatic middleware #19
 
-## [0.3.0] - 2017-03-18
+## 0.3.0 - 2017-03-18
 
 ### Changed
 
@@ -24,7 +24,7 @@ Completely re-tooled the entire package. This no longer holds any micro framewor
 - This CHANGELOG
 - ResponseFactoryStore for easily storing and utilizing response factories.
 
-## [0.2.4] - 2016-12-05
+## 0.2.4 - 2016-12-05
 
 ### Changed
 
@@ -38,14 +38,14 @@ Completely re-tooled the entire package. This no longer holds any micro framewor
 - a few more services to the REST package for convenience
 
 
-## [0.2.3] - 2016-12-05
+## 0.2.3 - 2016-12-05
 
 ### Added
 
 - Mountable Middleware \#5
 - Redirect Marshal Response Matching \#3
 
-## [0.2.2] - 2016-12-04
+## 0.2.2 - 2016-12-04
 
 Several minor changes to the system.
 
@@ -54,13 +54,13 @@ Several minor changes to the system.
 - Adding server to app service dependencies
 - Documentation updates and Std package update
 
-## [0.2.1] - 2016-11-30
+## 0.2.1 - 2016-11-30
 
 ### Fixed
 
 - Hotfix for fixing package.php inclusion
 
-## [0.2.0] - 2016-11-28
+## 0.2.0 - 2016-11-28
 
 ### Added
 
@@ -74,7 +74,7 @@ Several minor changes to the system.
 
 - Fixed bug with config defaults
 
-### [0.1.0] - 2016-11-23
+## 0.1.0 - 2016-11-23
 
 Initial Release
 
