@@ -6,6 +6,7 @@
 
 - HttpServiceProvider which provides basic services of the library
 - serveStatic middleware #19
+- Request Path #20
 
 ## 0.3.0 - 2017-03-18
 
