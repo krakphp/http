@@ -12,6 +12,26 @@ function injectRequestAttribute($name, $value) {
     };
 }
 
+/** Serves static files over a directory. The $root is a path to physical directory
+    to where the static files lie. */
+function serveStatic($root) {
+    return function($req, $next) use ($root) {
+        if ($req->getMethod() != 'GET') {
+            return $next($req);
+        }
+
+        $path = $req->getUri()->getPath();
+        $file_path = $root . $path;
+        if (!is_file($file_path)) {
+            return $next($req);
+        }
+
+        return $next->response(200, [
+            'Content-Type' => mime_content_type($file_path),
+        ], fopen($file_path, "r"));
+    };
+}
+
 function mount($path, $mw) {
     $mw = mw\group([
         function(ServerRequestInterface $req, $next) {
