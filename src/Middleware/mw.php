@@ -36,7 +36,7 @@ function mount($path, $mw) {
     $mw = mw\group([
         function(ServerRequestInterface $req, $next) {
             $stack = $req->getAttribute('original_uri_path');
-            $path = $stack->pop();
+            list($path) = $stack->pop();
             $req = $req->withUri($req->getUri()->withPath($path));
             if (!count($stack)) {
                 $req = $req->withoutAttribute('original_uri_path');
@@ -46,8 +46,8 @@ function mount($path, $mw) {
         $mw,
         function(ServerRequestInterface $req, $next) use ($path) {
             $orig_path = $req->getUri()->getPath();
-            $stack = $req->getAttribute('original_uri_path') ?: new \SplStack();
-            $stack->push($orig_path);
+            $stack = $req->getAttribute('original_uri_path') ?: new \SplDoublyLinkedList();
+            $stack->push([$orig_path, $path]);
             $new_path = substr($orig_path, strlen($path));
             if (!$new_path) {
                 $new_path = '/';

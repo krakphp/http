@@ -37,3 +37,26 @@ describe('#serveStatic', function() {
         assert($resp->getStatusCode() == 404);
     });
 });
+describe('#mount', function() {
+    it('mounts a middleware on a specific path', function() {
+        $mw = function($req, $next) {
+            $path = new Http\RequestPath($req);
+            return $next->response(200, [], $path->path('/assets/app.css'));
+        };
+
+        $compose = $this->container['krak.http.compose'];
+        $handler = $compose([
+            Http\Middleware\mount(
+                '/admin',
+                Http\Middleware\mount('/module', $mw)
+            )
+        ]);
+
+        $req = $this->container['request'];
+        $req = $req->withUri(
+            $req->getUri()->withPath('/admin/module')
+        )->withMethod('GET');
+        $resp = $handler($req);
+        assert($resp->getStatusCode() == 200 && (string) $resp->getBody() == "/admin/module/assets/app.css");
+    });
+});
