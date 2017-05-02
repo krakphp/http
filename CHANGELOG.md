@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.1 - 2017-05-02
+
 ### Added
 
 - HttpServiceProvider which provides basic services of the library
