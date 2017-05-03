@@ -12,6 +12,15 @@ function injectRequestAttribute($name, $value) {
     };
 }
 
+/** wraps psr-7 middleware */
+function wrap($middleware) {
+    return function($req, $next) use ($middleware) {
+        return $middleware($req, $next->response(200), function($req, $resp) use ($next) {
+            return $next($req);
+        });
+    };
+}
+
 /** Serves static files over a directory. The $root is a path to physical directory
     to where the static files lie. */
 function serveStatic($root) {

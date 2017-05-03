@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- wrap middleware to wrap PSR-7 style middleware #23
+- Middleware documentation
+
 ## 0.3.1 - 2017-05-02
 
 ### Added
