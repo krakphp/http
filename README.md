@@ -113,6 +113,61 @@ $server->serve(function($req) {
 });
 ```
 
+### Middleware
+
+Here are several useful middleware to use within your own applications. Each middleware takes two arguments: A PSR-7 Server Request, and an HttpLink. If you want more documentation on how the Link's work, checkout the Krak\\Mw library.
+
+```php
+<?php
+
+use Psr\Http\Message\ServerRequestInterface;
+use Krak\Http\Middleware\HttpLink;
+
+function myMiddleware() {
+    return function(ServerRequestInterface $req, HttpLink $next) {
+        if (certainCondition($req)) {
+            return $next($req->withAttribute('a', '1'))->withStatusCode(404);
+        }
+
+        return $next->response(404, ['X-Header' => 'value'], 'Some body'); // can also use a php or psr-7 stream.
+    };
+}
+```
+
+#### injectRequestAttribute($name, $value)
+
+This will automatically inject an attribute with a name and the given value.
+
+#### wrap($psr7_middleware)
+
+This will wrap PSR-7 style middleware that use the request and response in the middleware parameters.
+
+```php
+<?php
+
+$mw = Krak\Http\Middleware\wrap(function($req, $resp, callable $next) {
+
+});
+```
+
+#### serveStatic($root)
+
+This will sit and will check if a file exists at the URI path. If it does, it will serve the file, else it will fall through to the next middleware.
+
+#### mount($path, $mw)
+
+Mounts a middleware on a path prefix. If the path prefix is matched, then the middleware is invoked.
+
+```php
+<?php
+
+use function Krak\Http\Middleware\{mount, serveStatic};
+
+$mw = mount('/assets', serveStatic(__DIR__ . '/path/to/assets'));
+```
+
+The above middleware will try to load files on the `/assets` uri. So `GET /assets/app.css` will return a css file content *if* `__DIR__ . /path/to/assets/app.css` exists in the filesystem.
+
 ## Tests and Examples
 
 Run tests via:

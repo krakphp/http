@@ -2,6 +2,7 @@
 
 use Krak\Mw;
 use Krak\Http;
+use Psr\Http\Message;
 
 beforeEach(function() {
     $this->container = Krak\Cargo\container();
@@ -58,5 +59,22 @@ describe('#mount', function() {
         )->withMethod('GET');
         $resp = $handler($req);
         assert($resp->getStatusCode() == 200 && (string) $resp->getBody() == "/admin/module/assets/app.css");
+    });
+});
+describe('#wrap', function() {
+    it('wraps a psr-7 style middleware', function() {
+        $psr7_mw = function(Message\ServerRequestInterface $req, Message\ResponseInterface $resp, callable $next) {
+            return $next($req->withAttribute('foo', 'bar'), $resp)->withHeader('A', '1');
+        };
+        $compose = $this->container['krak.http.compose'];
+        $handler = $compose([
+            function($req, $next) {
+                return $next->response(201, [], $req->getAttribute('foo'));
+            },
+            Http\Middleware\wrap($psr7_mw)
+        ]);
+
+        $resp = $handler($this->container['request']);
+        assert($resp->getStatusCode() == 201 && (string) $resp->getBody() == 'bar' && $resp->getHeaderLine('A') == '1');
     });
 });
