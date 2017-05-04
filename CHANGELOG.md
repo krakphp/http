@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Bug in HttpServiceProvider
+
 ## 0.3.2 - 2017-05-03
 
 ### Added

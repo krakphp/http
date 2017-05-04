@@ -26,7 +26,7 @@ class HttpServiceProvider implements Cargo\ServiceProvider
             return $store;
         };
         $c[RouteCompiler::class] = function() {
-            return new Http\Route\RecursiveRouteCompiler();
+            return new Route\RecursiveRouteCompiler();
         };
         $c[DispatcherFactory::class] = function() {
             return new Dispatcher\FastRoute\FastRouteDispatcherFactory();
@@ -45,8 +45,8 @@ class HttpServiceProvider implements Cargo\ServiceProvider
                 }
             );
         };
-        $c[Http\Route\RouteGroup::class] = function() {
-            return new Http\Route\RouteGroup('');
+        $c[Route\RouteGroup::class] = function() {
+            return new Route\RouteGroup('');
         };
         $c['krak.http.response_factory.json_encode_options'] = 0;
         $c['krak.http.compose'] = function($c) {
