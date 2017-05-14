@@ -3,6 +3,7 @@
 namespace Krak\Mw\Http\Package\AutoArgs;
 
 use Krak\Mw\Http;
+use Krak\Mw;
 
 class AutoArgsFreezer implements Http\Freezer
 {
@@ -13,7 +14,7 @@ class AutoArgsFreezer implements Http\Freezer
     }
 
     public function freezeApp(Http\App $app) {
-        $resolve_arg = $app['stacks.resolve_argument']->compose();
+        $resolve_arg = Mw\compose([$app['stacks.resolve_argument']]);
         $app['stacks.invoke_action']->push(
             resolveArgumentsCallableInvokeInvokeAction($resolve_arg),
             0,

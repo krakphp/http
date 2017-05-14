@@ -10,8 +10,8 @@ class RouteAttributes
     public $mws;
     public $parent;
 
-    public function __construct(Mw\MwStack $mws = null) {
-        $this->mws = $mws ?: mw\stack('Route Stack');
+    public function __construct(Mw\Stack $mws = null) {
+        $this->mws = $mws ?: mw\stack();
     }
 
     public static function createChild(RouteAttributes $parent) {
@@ -23,7 +23,7 @@ class RouteAttributes
     /** merges to attributes together into a new route attributes */
     public function merge(RouteAttributes $attributes) {
         return new self(
-            mw\stackMerge($this->mws, $attributes->mws)
+            Mw\stack([$attributes->mws, $this->mws])
         );
     }
 

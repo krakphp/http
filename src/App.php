@@ -156,7 +156,7 @@ class App implements \ArrayAccess, EventEmitterInterface
         $mws = $this['stacks.http'];
 
         $this->emit(Events::INIT, [$this]);
-        $serve($mws->compose());
+        $serve(mw\compose([$mws]));
         $this->emit(Events::FINISH, [$this]);
     }
 

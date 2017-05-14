@@ -3,6 +3,7 @@
 namespace Krak\Mw\Http\Package\Std;
 
 use Krak\Mw\Http;
+use Krak\Mw;
 
 class StdFreezer implements Http\Freezer
 {
@@ -12,14 +13,14 @@ class StdFreezer implements Http\Freezer
         $dispatcher = $dispatcher_factory($app['routes']);
 
         $mws->push(
-            Http\catchException($app['stacks.exception_handler']->compose()),
+            Http\catchException(Mw\compose([$app['stacks.exception_handler']])),
             0,
             'catch_exception'
         );
         $mws->unshift(
             Http\injectRoutingMiddleware(
                 $dispatcher,
-                $app['stacks.not_found_handler']->compose()
+                Mw\compose([$app['stacks.not_found_handler']])
             ),
             0,
             'routing'
@@ -27,8 +28,8 @@ class StdFreezer implements Http\Freezer
         $mws->unshift(Http\injectRouteMiddleware(), 0, 'routes');
         $mws->unshift(
             Http\invokeRoutingAction(
-                $app['stacks.invoke_action']->compose(),
-                $app['stacks.marshal_response']->compose(),
+                Mw\compose([$app['stacks.invoke_action']]),
+                Mw\compose([$app['stacks.marshal_response']]),
                 $app['response_factory']
             ),
             0,

@@ -2,6 +2,7 @@
 
 use Krak\Mw\Http,
     GuzzleHttp\Psr7\ServerRequest;
+use Krak\Mw;
 
 describe('->mount', function() {
     it('mounts a middleware onto the app', function() {
@@ -12,8 +13,9 @@ describe('->mount', function() {
         });
         $app->get('/a/1', function() { assert(false); });
         $req = new ServerRequest('GET', '/a/2');
-        $res = $app($req, function() {});
-        assert($app($req, function() {}) == 1);
+        $handler = mw\compose([$app]);
+        $res = $handler($req);
+        assert($res == 1);
     });
     it('allows for recursive mounts', function() {
         $app1 = new Http\App();
@@ -31,7 +33,8 @@ describe('->mount', function() {
 
         $app3->get('/c/1', function() { assert(false); });
         $req = new ServerRequest('GET', '/a/b/c/d');
-        assert($app1($req, function() {}) == 4);
+        $handler = mw\compose([$app1]);
+        assert($handler($req) == 4);
     });
     it('allows for recursive mounted routes', function() {
         $app1 = new Http\App();
@@ -49,6 +52,7 @@ describe('->mount', function() {
         $app3['stacks.marshal_response']->push(function($res) { return $res; });
 
         $req = new ServerRequest('GET', '/a/b/c/d');
-        assert($app1($req, function() {}) == 2);
+        $handler = mw\compose([$app1]);
+        assert($handler($req) == 2);
     });
 });

@@ -9,7 +9,7 @@ class AutoArgsServiceProvider implements Pimple\ServiceProviderInterface
 {
     public function register(Pimple\Container $app) {
         $app['stacks.resolve_argument'] = function() {
-            return mw\stack('Resolve Argument');
+            return mw\stack();
         };
         $app->extend('freezer', function($freezer) {
             return new AutoArgsFreezer($freezer);

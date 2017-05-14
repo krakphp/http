@@ -25,7 +25,7 @@
     },
     "require": {
         "evenement/evenement": "^2.0",
-        "krak/mw": "^0.3.0",
+        "krak/mw": "^0.5.0",
         "nikic/fast-route": "^1.0",
         "nikic/iter": "^1.4",
         "pimple/pimple": "^3.0",
